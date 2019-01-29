@@ -1,8 +1,3 @@
-clip,start,end
-0,808,4044
-1,4044,5777
-2,5777,9359
-3,9359,21491
-4,21491,23802
-5,23802,27268
-6,27268,86196
+version https://git-lfs.github.com/spec/v1
+oid sha256:cd517819ff1dbdb16e4b0e7e3bdee6dc29846fd0a1054e9adc44a81d4537172f
+size 99
