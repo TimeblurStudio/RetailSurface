@@ -2,12 +2,8 @@
 
 
 ### What is this repository for? ###
-
-* This repository contains few experiments made for the retail surface prototype. 
-* This sketch is a visual controller to play an animation in a selected sequence, 
-* and the sequence can also be reconfigured with the interface provided in this
-* software, which can further be extended to an extenal hardware.
-* version 0.0.0
+This repository contains few experiments made for the retail surface prototype. This sketch is a visual controller to play an animation in a selected sequence, and the sequence can also be reconfigured with the interface provided in this software, which can further be extended to an extenal hardware.
+Version 0.0.1
 
 ### How do I get set up? ###
 * Install the following libraries and run this sketch in Processing 3.x or 2.x
@@ -25,7 +21,7 @@
 * Save all the clip information as a CSV(Automatically loaded when played again)
 * Ideal max video file duration: 1000s
 
-## To Do ## 
+### To Do ###
 * Connect/Disconnect from Syphon (To be added)
 
 ### How do I use it? ###
