@@ -6,11 +6,11 @@ This repository contains few experiments made for the retail surface prototype. 
 Version 0.0.1
 
 ### How do I get set up? ###
-* Install the following libraries and run this sketch in Processing 3.x or 2.x
+Just install the following libraries and run this sketch in Processing 3.x or 2.x
 
 ### Libraries ###
-* A. controlP5 v2.04
-* B. SyphonProcessing v2.0
+* controlP5 v2.04
+* SyphonProcessing v2.0
 
 ### Features ###
 * Switch between modes: Stencil, Mask and Video using radio buttons (on the top left)
