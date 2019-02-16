@@ -7,11 +7,11 @@ Version 0.0.2
 
 ### How do I get set up? ###
 Just install the following libraries and run this sketch in Processing 3.x
-
-### Libraries ###
 Install libraries using Sketch > Import Library... > Add Library... option in Processing IDE. 
 More:  https://github.com/processing/processing/wiki/How-to-Install-a-Contributed-Library#install-with-the-add-library-tool
 ![Installing Libraries](Libraries/InstallLibs.png)
+
+### Libraries ###
 * controlP5 v2.2.6
 * video v1.0.1
 * SyphonProcessing v2.0
