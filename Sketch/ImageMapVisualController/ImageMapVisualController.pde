@@ -32,6 +32,7 @@
  *   DEALINGS IN THE SOFTWARE. 
  */
 
+import spout.*;
 import processing.video.*;
 import controlP5.*;
 
@@ -41,6 +42,7 @@ String stencilFileName = "Journey102-A4720.png";
 String maskFileName = "journeyMask.001.jpeg";
 String maskVideoFileName = "Journey102-A4720.m4v";
 //
+Spout server;
 Movie loadMovie;
 String fileName;
 boolean clipPressed = false;
@@ -48,7 +50,6 @@ boolean clipPressedAgain = false;
 float time_scale = 1000;
 boolean playFlag = false;
 boolean updateFrame = false;
-boolean updatedBymovieEvent = false;
 //
 //
 //
@@ -65,7 +66,7 @@ int currentlyEditing = -1;
 ArrayList<Textlabel> startLabel = new ArrayList<Textlabel>();
 ArrayList<Textlabel> endLabel = new ArrayList<Textlabel>(); 
 ControlP5 cp5;
-Textlabel clipLabel, startValueLabel, endValueLabel, clipModeLabel;
+Textlabel clipLabel, startValueLabel, endValueLabel, clipModeLabel, triggerInLabel;
 Group allClips;
 //
 Range clipRange;
@@ -76,17 +77,20 @@ RadioButton selectClip;
 RadioButton playModes;
 Bang playpauseBang;
 ArrayList<Toggle>  cliploopMode = new ArrayList<Toggle>();
+ArrayList<Textfield>  triggerIn = new ArrayList<Textfield>();
 //
 int allClips_posX = 8, allClips_posY = 44;
 int clipLabel_posX = 0, clipLabel_posY = 6;
 int startValueLabel_posX = 65, startValueLabel_posY = 6;
 int endValueLabel_posX = 100, endValueLabel_posY = 6;
 int clipModeLabel_posX = 140, clipModeLabel_posY = 6;
+int triggerInLabel_posX = 170, triggerInLabel_posY = 6;
 //
 int selectClip_posX = 10, selectClip_posY = 18;
 int playModes_posX = 65, playModes_posY = 7;
 int playpauseBang_posX = 205, playpauseBang_posY = 4;
 int cliploopMode_posX = 150, cliploopMode_posY = 18;
+int triggerIn_posX = 180, triggerIn_posY = 18;
 //
 PImage loadStencil, loadMask;
 //
@@ -104,6 +108,8 @@ void setup(){
   loadMask = loadImage(maskFileName);
   loadMovieFile(maskVideoFileName);
   //
+  server = new Spout(this);
+  server.createSender("Processing Syphon");
   //
   imageMode(CORNERS);
 }
@@ -139,7 +145,7 @@ void setupgui(){
   //
   allClips = cp5.addGroup("allClips")
                 .setPosition(allClips_posX,allClips_posY)
-                .setWidth(180)
+                .setWidth(240)
                 .activateEvent(true)
                 .setBackgroundColor(color(0,150))
                 .setBackgroundHeight(22)
@@ -205,6 +211,14 @@ void setupgui(){
                     .setColorValue(color(255))
                     .setGroup(allClips)
                     ;  
+  triggerInLabel = cp5.addTextlabel("triggerInLabel")
+                    .setText("I/P TRIGGER")
+                    .setPosition(triggerInLabel_posX,triggerInLabel_posY)
+                    .setColorValue(color(255))
+                    .setGroup(allClips)
+                    ;  
+                    
+                    
 }
 
 
@@ -259,6 +273,20 @@ boolean loadCSV(){
                                 ;
       _toggle.getCaptionLabel().hide();
       cliploopMode.add(_toggle);
+      //
+      Textfield _field = cp5.addTextfield("trigger_in"+nf(clipCount,2))
+                            .setPosition(triggerIn_posX, triggerIn_posY + clipCount*12)
+                            .setWidth(30)
+                            .setHeight(10)
+                            .setAutoClear(false)
+                            .setGroup(allClips) 
+                            .setValue(row.getString("trigger")); 
+                            ;
+      _field.getCaptionLabel().hide();
+      triggerIn.add(_field);
+      //
+      if(!boolean(row.getInt("loop")))
+        _field.hide();
       //
       startClipValues.append(row.getInt("start"));
       endClipValues.append(row.getInt("end"));
@@ -343,13 +371,17 @@ void draw(){
   }
   //
   //Note: Needed to aviod paying/pausing from within the event
-  if(updateFrame && updatedBymovieEvent){ 
+  if(updateFrame){ 
     updateFrame = false;
     if(playFlag)
       loadMovie.play();
     else
       loadMovie.pause();
   }
+  
+  //
+  //
+  server.sendTexture();
 }
 
 void drawTimeline()
@@ -374,7 +406,7 @@ void drawTimeline()
 }
 
 void controlEvent(ControlEvent theControlEvent) {
-  
+  //
   if(theControlEvent.isFrom("clipRange")) {
     active_start = false;
     active_end = false;
@@ -397,24 +429,34 @@ void controlEvent(ControlEvent theControlEvent) {
       updateFrame = true;
     }
   }
-  
+  //
+  if(theControlEvent.getName().contains("loop") && frameCount > 0){
+    //
+    for(int i=0; i<selectClip.getArrayValue().length;i++){
+      if(!boolean(int(cliploopMode.get(i).getValue())))
+        triggerIn.get(i).hide();
+      else
+        triggerIn.get(i).show();
+    }
+    //
+  }
+  //
+  //
   if(theControlEvent.isFrom("playModes")) {
     int display = -1;
-    
+    //
     for(int i=0;i<theControlEvent.getGroup().getArrayValue().length;i++) {
       if(int(theControlEvent.getGroup().getArrayValue()[i]) == 1){
         display = i;
         break;  
       }
     }
-    
     //
     if(display != -1){
       displayMode = display;
     }else{
       playModes.activate(displayMode);
     }
-    
     if(display == 2){
       playpauseBang.show();
       allClips.open();
@@ -422,7 +464,6 @@ void controlEvent(ControlEvent theControlEvent) {
     else{
       playpauseBang.hide();
       allClips.close();
-      
     }
   }
   
@@ -440,7 +481,6 @@ void controlEvent(ControlEvent theControlEvent) {
       currentlySelected = clipNumber;
       loadMovie.jump(startClipValues.get(clipNumber)/time_scale);
       updateFrame = true;
-      updatedBymovieEvent = false;
       if(playFlag == false)
         loadMovie.play();
     }else{
@@ -528,6 +568,18 @@ void add(){
     _toggle.getCaptionLabel().hide();
     cliploopMode.add(_toggle);
     //
+    //
+    Textfield _field = cp5.addTextfield("trigger_in"+nf(clipCount,2))
+                          .setPosition(triggerIn_posX, triggerIn_posY + clipCount*12)
+                          .setWidth(30)
+                          .setHeight(10)
+                          .setAutoClear(false)
+                          .setGroup(allClips) 
+                          ;
+    _field.getCaptionLabel().hide();
+    triggerIn.add(_field);
+    _field.hide();
+    //
     startClipValues.append(start_clip);
     endClipValues.append(end_clip);
     Textlabel start = cp5.addTextlabel("startLabel"+nf(clipCount,2))
@@ -565,6 +617,7 @@ void saveCSV(){
   table.addColumn("start");
   table.addColumn("end");
   table.addColumn("loop");
+  table.addColumn("trigger");
   
   for(int i=0; i < startClipValues.size(); i++){
     TableRow newRow = table.addRow();
@@ -572,14 +625,15 @@ void saveCSV(){
     newRow.setInt("start", startClipValues.get(i));
     newRow.setInt("end", endClipValues.get(i));
     newRow.setInt("loop", int(cliploopMode.get(i).getValue()));
+    newRow.setString("trigger", triggerIn.get(i).getText());
   }
   saveTable(table, csvFilename);
 }
 
 // Called every time a new frame is available to read
 void movieEvent(Movie m) {
-  if(updateFrame && !updatedBymovieEvent){
-    updatedBymovieEvent = true;
+  if(updateFrame){
+    updateFrame = false;
     m.read();
   }
   //
@@ -588,14 +642,18 @@ void movieEvent(Movie m) {
 }
 
 void keyPressed(){
-  println("KeyPressed!");
-  if(currentlySelected < selectClip.getArrayValue().length - 1){  
-    selectClip.activate(currentlySelected+1);
-    println("Clip-" + currentlySelected + " Activated." );
-  }
-  else{
-    currentlySelected = 0;
-    selectClip.activate(currentlySelected); 
-    println("Reset to: " + "Clip-" +  currentlySelected + "." );
+  if(key == CODED){
+    if(keyCode == RIGHT){
+      println("NEXT - KeyPressed!");
+      if(currentlySelected < selectClip.getArrayValue().length - 1){  
+        selectClip.activate(currentlySelected+1);
+        println("Clip-" + currentlySelected + " Activated." );
+      }
+      else{
+        currentlySelected = 0;
+        selectClip.activate(currentlySelected); 
+        println("Reset to: " + "Clip-" +  currentlySelected + "." );
+      }
+    }
   }
 }
