@@ -1,3 +1,4 @@
+
 /**
  * ImageMapVisualController 
  * by Mike Cj. 
@@ -10,12 +11,11 @@
  * ----------
  * LICENSE: 
  *   Copyright (c) 2019 TIMEBLUR
- *   Permission is hereby granted by the Licensor(Timeblur) to the Licensee (Kavita Arora),
- *   obtaining a copy of this software and associated documentation files (the "Software"), 
- *   a perpetual, worldwide, royalty-free, non-exclusive license, to deal in the Software without  
- *   restriction, including without limitation the rights to use, copy, modify, merge, publish, 
- *   distribute, and/or sell copies of the Software, and to permit persons to whom the Software, 
- *   is furnished to do so, subject to the following conditions:
+ *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ *   and associated documentation files (the "Software"), to deal in the Software without restriction,
+ *   including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ *   and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
+ *   subject to the following conditions:
  *   
  *   
  *   The above copyright notice and this permission notice shall be included in all copies
@@ -32,17 +32,20 @@
  *   DEALINGS IN THE SOFTWARE. 
  */
 
-import spout.*;
 import processing.video.*;
 import controlP5.*;
-
+import spout.*;
+import codeanticode.syphon.*;
 //
 //
 String stencilFileName = "Journey102-A4720.png";
 String maskFileName = "journeyMask.001.jpeg";
 String maskVideoFileName = "Journey102-A4720.m4v";
 //
-Spout server;
+PGraphics pg;
+Spout server_spout = null;
+SyphonServer server_syphon = null;
+//
 Movie loadMovie;
 String fileName;
 boolean clipPressed = false;
@@ -58,6 +61,7 @@ int start_clip = 0, end_clip = 0;
 boolean active_start = false, active_end = false;
 int clipCount = 0;
 int displayMode = -1;
+int activeServer = -1;
 boolean selectActive = false;
 int currentlySelected = -1;
 IntList startClipValues = new IntList(), endClipValues = new IntList();
@@ -75,6 +79,7 @@ Bang addBang, saveCSVBang;
 //
 RadioButton selectClip;
 RadioButton playModes;
+RadioButton serverModes;
 Bang playpauseBang;
 ArrayList<Toggle>  cliploopMode = new ArrayList<Toggle>();
 ArrayList<Textfield>  triggerIn = new ArrayList<Textfield>();
@@ -88,6 +93,7 @@ int triggerInLabel_posX = 170, triggerInLabel_posY = 6;
 //
 int selectClip_posX = 10, selectClip_posY = 18;
 int playModes_posX = 65, playModes_posY = 7;
+int serverModes_posX = 65, serverModes_posY = 20;
 int playpauseBang_posX = 205, playpauseBang_posY = 4;
 int cliploopMode_posX = 150, cliploopMode_posY = 18;
 int triggerIn_posX = 180, triggerIn_posY = 18;
@@ -96,7 +102,9 @@ PImage loadStencil, loadMask;
 //
 //
 void setup(){
-  size(842, 595);
+  size(842, 595, P3D);
+  pg = createGraphics(width, height, P3D);
+  //
   smooth();
   frameRate(30);
   //
@@ -108,8 +116,6 @@ void setup(){
   loadMask = loadImage(maskFileName);
   loadMovieFile(maskVideoFileName);
   //
-  server = new Spout(this);
-  server.createSender("Processing Syphon");
   //
   imageMode(CORNERS);
 }
@@ -186,7 +192,20 @@ void setupgui(){
                  .activate(2)
                  .hide()
                  ;
-  
+  //
+  serverModes = cp5.addRadioButton("serverModes")
+                 .setPosition(serverModes_posX,serverModes_posY)
+                 .setSize(10, 10)
+                 .setItemsPerRow(4)
+                 .setSpacingColumn(35)
+                 .setSpacingRow(2)
+                 .addItem("None", 0)
+                 .addItem("Syphon", 1)
+                 .addItem("Spout", 2)
+                 .activate(0)
+                 .hide()
+                 ;
+  //
   clipLabel = cp5.addTextlabel("clipLabel")
                     .setText("SELECT CLIP")
                     .setPosition(clipLabel_posX,clipLabel_posY)
@@ -217,8 +236,6 @@ void setupgui(){
                     .setColorValue(color(255))
                     .setGroup(allClips)
                     ;  
-                    
-                    
 }
 
 
@@ -247,6 +264,7 @@ void loadMovieFile(String fileName){
   boolean entriesPresent = loadCSV();
   clipToggle.show();
   playModes.show();
+  serverModes.show();
   cp5.show();
   if(entriesPresent)  allClips.show();
   else                allClips.hide();
@@ -316,17 +334,23 @@ boolean loadCSV(){
 
 void draw(){
   background(0);
-  stroke(255);
-  fill(255);
+  //
+  pg.beginDraw();
+  pg.background(0);
+  pg.stroke(255);
+  pg.fill(255);
   //
   if(displayMode == 0)
-    image(loadStencil, 0, 0, width, height);
+    pg.image(loadStencil, 0, 0, width, height);
   if(displayMode == 1)
-    image(loadMask, 0, 0, width, height);
+    pg.image(loadMask, 0, 0, width, height);
   if(displayMode == 2){
-    image(loadMovie, 0, 0, width, height);
+    pg.image(loadMovie, 0, 0, width, height);
   }
-  
+  pg.endDraw();
+  //
+  image(pg, 0, 0, width, height);   
+  //
   fill(0, 150);
   noStroke();
   rect(0,0,width, 32);
@@ -365,8 +389,6 @@ void draw(){
       }else{
         ;  
       }
-      
-      
     }
   }
   //
@@ -381,7 +403,17 @@ void draw(){
   
   //
   //
-  server.sendTexture();
+  if(activeServer == 1){
+    if(server_syphon != null)
+      server_syphon.sendImage(pg);  
+  }else if(activeServer == 2){
+    if(server_spout != null)
+      server_spout.sendTexture(pg);
+  }else{
+   ;//Nothing to be sent 
+  }
+  //
+  //
 }
 
 void drawTimeline()
@@ -454,9 +486,8 @@ void controlEvent(ControlEvent theControlEvent) {
     //
     if(display != -1){
       displayMode = display;
-    }else{
-      playModes.activate(displayMode);
     }
+    //
     if(display == 2){
       playpauseBang.show();
       allClips.open();
@@ -466,8 +497,40 @@ void controlEvent(ControlEvent theControlEvent) {
       allClips.close();
     }
   }
-  
-    
+  //
+  if(theControlEvent.isFrom("serverModes")){
+    int active = -1;
+    //
+    for(int i=0;i<theControlEvent.getGroup().getArrayValue().length;i++) {
+      if(int(theControlEvent.getGroup().getArrayValue()[i]) == 1){
+        active = i;
+        break;  
+      }
+    }
+    //
+    if(active != -1){
+      activeServer = active;
+    }
+    //
+    if(activeServer == 0){
+      ;// None
+    }
+    else if(activeServer == 1){
+      if(server_syphon == null){
+        server_syphon = new SyphonServer(this, "Processing Syphon");
+      }
+      else
+        println("Syphon server already created. Activating mode");
+    }else if(activeServer == 2){
+      if(server_spout == null){
+        server_spout = new Spout(this);
+        server_spout.createSender("Processing Syphon");
+      }
+    }else{
+      ;// active is -1
+    }
+  }
+  //  
   if(theControlEvent.isFrom("selectClip") && !clipPressed) {
     int clipNumber = -1;
     for(int i=0;i<theControlEvent.getGroup().getArrayValue().length;i++) {
@@ -504,7 +567,6 @@ void controlEvent(ControlEvent theControlEvent) {
       addBang.setLabel("update");
       if(!clipPressed){
         ;
-        //kinect.seekPlayer(startClipValues.get(clipNumber)+1);
       }
       else
         clipRange.setRangeValues(startClipValues.get(clipNumber)+1,endClipValues.get(clipNumber)+1);
@@ -512,12 +574,8 @@ void controlEvent(ControlEvent theControlEvent) {
       editActive = false;
       currentlyEditing = -1;
       addBang.setLabel("add");
-      //kinect.seekPlayer(0);
     }  
   }
-  
-  
-  
 }
 
 

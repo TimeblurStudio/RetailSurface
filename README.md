@@ -3,13 +3,15 @@
 
 ### What is this repository for? ###
 This repository contains few experiments made for the retail surface prototype. This sketch is a visual controller to play an animation in a selected sequence, and the sequence can also be reconfigured with the interface provided in this software, which can further be extended to an extenal hardware.
-Version 0.0.2
+Version 0.0.3
 
 ### How do I get set up? ###
 Just install the following libraries and run this sketch in Processing 3.x
 Install libraries using Sketch > Import Library... > Add Library... option in Processing IDE. 
+<br>
 More:  https://github.com/processing/processing/wiki/How-to-Install-a-Contributed-Library#install-with-the-add-library-tool
-![Installing Libraries](Libraries/InstallLibs.png)
+<br>
+<img style="float: left;" src="Libraries/InstallLibs.png">
 
 ### Libraries ###
 * controlP5 v2.2.6
@@ -19,6 +21,7 @@ More:  https://github.com/processing/processing/wiki/How-to-Install-a-Contribute
 ### Features ###
 * Switch between modes: Stencil, Mask and Video using radio buttons (on the top left)
 * Play/Pause video if you are in Video mode (next to radio buttons)
+* Connect/Disconnect from Syphon in Mac or, Spout on Windows (radio buttons below Switch modes)   
 * Mark Clips with the Clip toggle (on the top right)
 * Add new clips or update selected clip with a button (next to clip toggle)
 * Choose few clips to be in loop with the checkbox & press next arrow to play the next clip in the sequence
@@ -26,7 +29,8 @@ More:  https://github.com/processing/processing/wiki/How-to-Install-a-Contribute
 * Ideal max video file duration: 1000s
 
 ### To Do ###
-* Connect/Disconnect from Syphon (To be added)
+* Read from trigger from serial
+* Bug fixes if any
 
 ### How do I use it? ###
 * Add your own stencil, mask and video file
@@ -39,4 +43,5 @@ More:  https://github.com/processing/processing/wiki/How-to-Install-a-Contribute
 * Team contact: Mike Cj (mike@timeblur.io)
 
 ### LICENSE ###
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 * Licenses are included with the source code.
