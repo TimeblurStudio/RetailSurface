@@ -6,8 +6,8 @@
  * ----------
  * Description:
  * This sketch is a visual controller to play an animation in a selected sequence, and the sequence 
- * can also be reconfigured with the interface provided in this software, which can further be 
- * extended to an extenal hardware.
+ * can also be reconfigured with the interface provided in this software, which is further extended
+ * to receive triggers from an extenal hardware.
  * ----------
  * LICENSE: 
  *   Copyright (c) 2019 TIMEBLUR
@@ -32,6 +32,7 @@
  *   DEALINGS IN THE SOFTWARE. 
  */
 
+import processing.serial.*;
 import processing.video.*;
 import controlP5.*;
 import spout.*;
@@ -55,6 +56,7 @@ boolean playFlag = false;
 boolean updateFrame = false;
 //
 //
+Serial triggerInPort;
 //
 String csvFilename;
 int start_clip = 0, end_clip = 0;
@@ -102,6 +104,14 @@ PImage loadStencil, loadMask;
 //
 //
 void setup(){
+  setupSerial("/dev/cu.usbserial-A9CVR15H");
+  //
+  setupgui();
+  loadStencil = loadImage(stencilFileName);
+  loadMask = loadImage(maskFileName);
+  loadMovieFile(maskVideoFileName);
+  //
+  //
   size(842, 595, P3D);
   pg = createGraphics(width, height, P3D);
   //
@@ -109,15 +119,19 @@ void setup(){
   frameRate(30);
   //
   //
-  setupgui();
-  //
-  //
-  loadStencil = loadImage(stencilFileName);
-  loadMask = loadImage(maskFileName);
-  loadMovieFile(maskVideoFileName);
-  //
-  //
   imageMode(CORNERS);
+  //
+  //
+}
+
+void setupSerial(String portName){
+  try{
+    triggerInPort = new Serial(this, portName, 9600);
+  }catch(Exception e){
+    println("Exception while attempting to open port!");
+    //e.printStackTrace();
+    exit();
+  }  
 }
 
 void setupgui(){
@@ -275,8 +289,9 @@ boolean loadCSV(){
   println(dataPath("")+"/"+csvFilename.substring(5, csvFilename.length()));
   println("File exists: " + csvFile.exists());
   if (csvFile.exists()){
-    Table table;
+    Table table = null;
     table = loadTable(csvFilename, "header");
+    //
     if(table.getRowCount() <= 0)  
       return false;
     for (TableRow row : table.rows()) {
@@ -331,9 +346,33 @@ boolean loadCSV(){
 }
 
 
+void readSerialLooper(){
+  while (triggerInPort.available() > 0) {
+    String inBuffer = triggerInPort.readString();   
+    if (inBuffer != null && currentlySelected != -1) {
+      String dataBuffer = trim(inBuffer);
+      println(dataBuffer + " **** " + triggerIn.get(currentlySelected).getText());
+      if(dataBuffer.equals(triggerIn.get(currentlySelected).getText())){//
+        //
+        if(currentlySelected < selectClip.getArrayValue().length - 1){  
+          selectClip.activate(currentlySelected+1);
+          println("Clip-" + currentlySelected + " Activated." );
+        }
+        else{
+          currentlySelected = 0;
+          selectClip.activate(currentlySelected); 
+          println("Reset to: " + "Clip-" +  currentlySelected + "." );
+        }
+        //
+      }
+    }
+  }
+}
+
 
 void draw(){
   background(0);
+  readSerialLooper();
   //
   pg.beginDraw();
   pg.background(0);
@@ -610,7 +649,6 @@ void clip(boolean flag) {
     addBang.hide();
     playFlag = true;
   }
-
 }
 
 

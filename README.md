@@ -3,7 +3,7 @@
 
 ### What is this repository for? ###
 This repository contains few experiments made for the retail surface prototype. This sketch is a visual controller to play an animation in a selected sequence, and the sequence can also be reconfigured with the interface provided in this software, which can further be extended to an extenal hardware.
-Version 0.0.3
+Version 0.0.4
 
 ### How do I get set up? ###
 Just install the following libraries and run this sketch in Processing 3.x
@@ -17,6 +17,7 @@ More:  https://github.com/processing/processing/wiki/How-to-Install-a-Contribute
 * controlP5 v2.2.6
 * video v1.0.1
 * SyphonProcessing v2.0
+* Spout v2.0.6
 
 ### Features ###
 * Switch between modes: Stencil, Mask and Video using radio buttons (on the top left)
@@ -26,10 +27,10 @@ More:  https://github.com/processing/processing/wiki/How-to-Install-a-Contribute
 * Add new clips or update selected clip with a button (next to clip toggle)
 * Choose few clips to be in loop with the checkbox & press next arrow to play the next clip in the sequence
 * Save all the clip information as a CSV(Automatically loaded when played again)
+* When in loop, break loop with a trigger from touch inputs over Serial & just use the same string for trigger.
 * Ideal max video file duration: 1000s
 
 ### To Do ###
-* Read from trigger from serial
 * Bug fixes if any
 
 ### How do I use it? ###
@@ -43,5 +44,4 @@ More:  https://github.com/processing/processing/wiki/How-to-Install-a-Contribute
 * Team contact: Mike Cj (mike@timeblur.io)
 
 ### LICENSE ###
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-* Licenses are included with the source code.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) Licenses are included with the source code.
