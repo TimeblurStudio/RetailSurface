@@ -3,7 +3,7 @@
 
 ### What is this repository for? ###
 This repository contains few experiments made for the retail surface prototype. This sketch is a visual controller to play an animation in a selected sequence, and the sequence can also be reconfigured with the interface provided in this software, which can further be extended to an extenal hardware.
-Version 0.0.4
+Version 0.0.5
 
 ### How do I get set up? ###
 Just install the following libraries and run this sketch in Processing 3.x
@@ -29,6 +29,15 @@ More:  https://github.com/processing/processing/wiki/How-to-Install-a-Contribute
 * Save all the clip information as a CSV(Automatically loaded when played again)
 * When in loop, break loop with a trigger from touch inputs over Serial & just use the same string for trigger.
 * Ideal max video file duration: 1000s
+
+### Changes ###
+* V0.0.5
+// [DONE] Input Mode and 
+// [DONE] Fix clips - selectable and playing 
+// [DONE] Save/Load preferences
+// [DONE] Organize
+// [DONE] Run program when csv does not exist
+
 
 ### To Do ###
 * Bug fixes if any
